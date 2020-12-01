@@ -10,8 +10,8 @@ let getData (file) = (readLines file)
 
 let loopSeq (data:list<int>) = seq {
        for i in 0..data.Length-3 do
-           for j in 0..data.Length-2 do
-               for k in i+1..data.Length-1 do 
+           for j in i+1..data.Length-2 do
+               for k in j+2..data.Length-1 do 
                    match data.[i] + data.[j] + data.[k] with
                        | 2020 -> yield data.[i] * data.[j] * data.[k]
                        | _ -> ignore ()
@@ -29,15 +29,11 @@ let rec comb n l =
     | _, [] -> []
     | k, (x::xs) -> List.map ((@) [x]) (comb (k-1) xs) @ comb k xs
 
-let solution2 data = Option.get (data
-                                 |> Seq.toList
-                                 |> comb 3
-                                 |> List.tryFind (fun x -> match x with
-                                                            |[a;b;c] -> a+b+c = 2020
-                                                            | _ -> false)
-                                 |> fun x -> match x with
-                                                | Some([a;b;c]) -> Some(a*b*c)
-                                                | _ -> None)
+let solution2 data = data
+                     |> Seq.toList
+                     |> comb 3
+                     |> List.find (fun x -> List.sum x = 2020)
+                     |> List.reduce (*)
 
 [<EntryPoint>]
 let main argv =
