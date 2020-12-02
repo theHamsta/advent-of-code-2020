@@ -1,6 +1,6 @@
 # advent-of-code-2020
 
-## Installation of dotnet framework
+## Installation of dotnet Framework
 
 ```bash
 snap install dotnet-sdk --classic
