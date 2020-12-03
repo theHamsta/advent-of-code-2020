@@ -31,8 +31,7 @@ let solution2 data = let moveOffsets = [(1,1); (3,1); (5,1); (7,1); (1,2)]
                      let moveFn dx dy row = dx * (row / dy)
                      let rowPredicate dy row = row % dy = 0
                      moveOffsets
-                     |> List.map (fun (dx,dy) -> countTrees data (moveFn dx dy) (rowPredicate dy))
-                     |> List.map bigint // Why are we still using int32?
+                     |> List.map ((fun (dx,dy) -> countTrees data (moveFn dx dy) (rowPredicate dy)) >> bigint)
                      |> Seq.reduce (*)
 
 [<EntryPoint>]
