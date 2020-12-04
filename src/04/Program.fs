@@ -28,8 +28,8 @@ let parseRecord (text:string) = let record = text.Split [|' ';'\n'|]
                                                 if y < 2020 || y > 2030 then failwith "Divisor cannot be zero!" else y;
                                           hgt = let h = record.["hgt"]
                                                 match h with
-                                                      | Regex @"(\d+)in" [a] -> if (int a) < 59 || (int a) > 76 then failwith "Divisor cannot be zero!" else h
-                                                      | Regex @"(\d+)cm" [a] -> if (int a) < 150 || (int a) > 193 then failwith "Divisor cannot be zero!" else h
+                                                      | Regex @"^(\d+)in$" [a] -> if (int a) < 59 || (int a) > 76 then failwith "Divisor cannot be zero!" else h
+                                                      | Regex @"^(\d+)cm$" [a] -> if (int a) < 150 || (int a) > 193 then failwith "Divisor cannot be zero!" else h
                                                       | _ -> failwith "Divisor cannot be zero!";
                                           hcl = let h = record.["hcl"]
                                                 match h with
@@ -37,7 +37,7 @@ let parseRecord (text:string) = let record = text.Split [|' ';'\n'|]
                                                    | _ -> failwith "Divisor cannot be zero!";
                                           ecl = let h = record.["ecl"]
                                                 match h with
-                                                      | Regex @"(amb|blu|brn|gry|grn|hzl|oth)" [_] -> h
+                                                      | Regex @"^(amb|blu|brn|gry|grn|hzl|oth)$" [_] -> h
                                                       | _ -> failwith "Divisor cannot be zero!";
                                           pid = let h = record.["pid"]
                                                 match h with
