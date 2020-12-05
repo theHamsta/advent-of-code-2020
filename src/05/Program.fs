@@ -12,15 +12,14 @@ type Seat = { row: int; column: int }
 
 let parseNumberString (encodedNumber: string) (oneChar: char) (zeroChar: char) =
     try
-        let chars = encodedNumber.ToCharArray()
-
-        Array.foldBack (fun character (number: int, value: int) ->
+        Seq.foldBack (fun character (number: int, value: int) ->
             let nextValue = value * 2
 
             match character with
             | c when (oneChar = c) -> number + value, nextValue
             | c when (zeroChar = c) -> number, nextValue
-            | _ -> failwith "invalid character") chars (0, 1)
+            | _ -> failwith "invalid character") encodedNumber (0, 1)
+
         |> (fun (number, value) ->
             assert (value = (1 <<< encodedNumber.Length))
             number)
