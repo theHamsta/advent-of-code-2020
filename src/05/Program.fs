@@ -12,10 +12,9 @@ type Seat = { row: int; column: int }
 
 let parseNumberString (encodedNumber: string) (oneChar: char) (zeroChar: char) =
     try
-        let chars =
-            encodedNumber.ToCharArray() |> Seq.ofArray
+        let chars = encodedNumber.ToCharArray()
 
-        Seq.foldBack (fun character (number: int, value: int) ->
+        Array.foldBack (fun character (number: int, value: int) ->
             let nextValue = value * 2
 
             match character with
