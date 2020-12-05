@@ -20,10 +20,7 @@ let parseNumberString (encodedNumber: string) (oneChar: char) (zeroChar: char) =
             | c when (zeroChar = c) -> number, nextValue
             | _ -> failwith "invalid character") encodedNumber (0, 1)
 
-        |> (fun (number, value) ->
-            assert (value = (1 <<< encodedNumber.Length))
-            number)
-        |> Some
+        |> (fst >> Some)
     with _ -> None
 
 let parseSeat (line: string) =
