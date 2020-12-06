@@ -6,17 +6,16 @@ let tee thing =
     thing
 
 let reduceAnswers reduceFn (group: string) =
-    group.Split("\n", StringSplitOptions.None)
+    group.Split("\n", StringSplitOptions.RemoveEmptyEntries)
     |> Array.map set
-    |> Array.filter (Set.isEmpty >> not)
     |> Array.reduce reduceFn
 
 let solution1 (text: string) =
-    text.Split("\n\n", StringSplitOptions.None)
+    text.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
     |> Array.sumBy ((reduceAnswers Set.union) >> Set.count >> bigint)
 
 let solution2 (text: string) =
-    text.Split("\n\n", StringSplitOptions.None)
+    text.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
     |> Array.sumBy ((reduceAnswers Set.intersect) >> Set.count >> bigint)
 
 [<EntryPoint>]
