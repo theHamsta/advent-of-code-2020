@@ -5,10 +5,10 @@ let tee thing =
     printfn "%A" thing
     thing
 
-let reduceAnswers reduceFn (group: string) =
+let reduceAnswers reduceSetFn (group: string) =
     group.Split("\n", StringSplitOptions.RemoveEmptyEntries)
     |> Array.map set
-    |> Array.reduce reduceFn
+    |> Array.reduce reduceSetFn
 
 let solution1 (text: string) =
     text.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
