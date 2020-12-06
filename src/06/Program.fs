@@ -7,7 +7,7 @@ let tee thing =
 
 let reduceAnswers reduceFn (group: string) =
     group.Split("\n", StringSplitOptions.None)
-    |> Array.map (set >> tee)
+    |> Array.map set
     |> Array.filter (Set.isEmpty >> not)
     |> Array.reduce reduceFn
 
@@ -17,7 +17,7 @@ let solution1 (text: string) =
 
 let solution2 (text: string) =
     text.Split("\n\n", StringSplitOptions.None)
-    |> Array.sumBy ((reduceAnswers Set.intersect) >> Set.count >> tee >> bigint)
+    |> Array.sumBy ((reduceAnswers Set.intersect) >> Set.count >> bigint)
 
 [<EntryPoint>]
 let main argv =
