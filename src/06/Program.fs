@@ -18,6 +18,13 @@ let solution2 (text: string) =
     text.Split("\n\n", StringSplitOptions.RemoveEmptyEntries)
     |> Array.sumBy ((reduceAnswers Set.intersect) >> Set.count >> bigint)
 
+#if INTERACTIVE
+let data = File.ReadAllText "input/06"
+
+let sol1 = solution1 data
+let sol2 = solution2 data
+#else
+
 [<EntryPoint>]
 let main argv =
     match argv with
@@ -31,3 +38,4 @@ let main argv =
     | _ ->
         printfn "Invalid number of arguments: %A" argv
         -1
+#endif
