@@ -2,10 +2,6 @@ open System.IO
 open System
 open System.Text.RegularExpressions
 
-let tee thing =
-    printfn "%A" thing
-    thing
-
 type Rule = { color: string; contents: Map<string, int> }
 
 let (|RegexMatches|_|) pattern input =
