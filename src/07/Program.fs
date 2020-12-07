@@ -38,23 +38,22 @@ let rec breadthSearchCount (start:Rule) (rules:Map<string, Rule>) =
     let childrenResult = Seq.sum(seq { for i in start.contents -> (breadthSearchCount (rules.[i.Key]) rules) * i.Value })
     1 + childrenResult
 
+let getRuleMap (text:string) = 
+    text.Split("\n", StringSplitOptions.RemoveEmptyEntries)
+    |> Array.map parseRule
+    |> Seq.filter Option.isSome
+    |> Seq.map (Option.get >>  (fun r -> (r.color, r)))
+    |> Map
+
 let solution1 (text: string) (startColor:string) =
-    let rules = text.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-                |> Array.map parseRule
-                |> Seq.filter Option.isSome
-                |> Seq.map (Option.get >>  (fun r -> (r.color, r)))
-                |> Map
+    let rules = getRuleMap text
     rules
     |> Seq.map (fun r -> (breadthSearchKey rules.[r.Key] rules).Remove(r.Key))
     |> Seq.filter (fun x -> x.Contains(startColor))
     |> Seq.length
 
 let solution2 (text: string) (startColor:string) =
-    let rules = text.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-                |> Array.map parseRule
-                |> Seq.filter Option.isSome
-                |> Seq.map (Option.get >>  (fun r -> (r.color, r)))
-                |> Map
+    let rules = getRuleMap text
     (breadthSearchCount rules.[startColor] rules) - 1
 
 let data = File.ReadAllText "input/07"
