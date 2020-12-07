@@ -4,11 +4,6 @@ open System.Text.RegularExpressions
 
 type Rule = { color: string; contents: Map<string, int> }
 
-let (|RegexMatches|_|) pattern input =
-     let m = Regex.Matches(input, pattern)
-     if m.Count > 0 then Some(m)
-     else None
-
 let parseRule (line: string) =
     let splits = line.Split(" contain ", StringSplitOptions.RemoveEmptyEntries)
     try 
