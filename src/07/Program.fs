@@ -12,7 +12,7 @@ let parseRule (line: string) =
 
         let color = Regex.Match(colorPart, @"(\w+\s+\w+)\sbags").Groups.[1].Value
         let contents = Regex.Matches(contentPart, @"(\d+)\s+(\w+\s+\w+)\sbag[s]?")
-                       |> Seq.map (fun m -> ((m.Groups.[2].Value), (int (m.Groups.[1].Value))))
+                       |> Seq.map (fun m -> (m.Groups.[2].Value, int (m.Groups.[1].Value)))
                        |> Map<string, int>
 
         Some({ color = color;
@@ -20,8 +20,8 @@ let parseRule (line: string) =
 
     with _ -> None
 
-let rec depthSearchKey (start:Rule) (rules:Map<string, Rule>) =
-    let children = Set.unionMany(seq { for i in start.contents -> depthSearchKey (rules.[i.Key]) rules })
+let rec depthSearchColors (start:Rule) (rules:Map<string, Rule>) =
+    let children = Set.unionMany(seq { for i in start.contents -> depthSearchColors (rules.[i.Key]) rules })
     let self = start.color
     children.Add(self)
 
@@ -39,7 +39,7 @@ let getRuleMap (text: string) =
 let solution1 (text: string) (startColor: string) =
     let rules = getRuleMap text
     rules
-    |> Seq.map (fun r -> (depthSearchKey rules.[r.Key] rules).Remove(r.Key))
+    |> Seq.map (fun r -> (depthSearchColors rules.[r.Key] rules).Remove(r.Key))
     |> Seq.filter (fun x -> x.Contains(startColor))
     |> Seq.length
 
