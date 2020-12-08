@@ -39,9 +39,11 @@ let executeProgram (flipInstruction: int) (program: Instruction array) =
 
     while not (visitedInstructions.Contains(currentInstruction))
           && (currentInstruction < program.Length) && (currentInstruction >= 0) do
+
         let op = program.[currentInstruction]
-        visitedInstructions <- visitedInstructions.Add(currentInstruction)
         let flip = currentInstruction = flipInstruction
+
+        visitedInstructions <- visitedInstructions.Add(currentInstruction)
         currentInstruction <- currentInstruction + 1
 
         match (op.opCode, flip) with
