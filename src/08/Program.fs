@@ -62,11 +62,11 @@ let solution1 program =
     |> executeProgram -1
 
 let solution2 (program: Instruction array) =
-    seq { for i in 0 .. program.Length - 1 -> i }
-        |> Seq.map (fun flipInstruction -> executeProgram flipInstruction program)
-        |> Seq.find (fun result -> match result with
-                                    | Success(_) -> true
-                                    | _ -> false)
+    program
+    |> Seq.mapi (fun flipInstruction _ -> executeProgram flipInstruction program)
+    |> Seq.find (fun result -> match result with
+                                | Success(_) -> true
+                                | _ -> false)
 
 let data = File.ReadAllText "input/08"
 
