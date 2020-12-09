@@ -18,23 +18,22 @@ let rec solution1 (startIndex:int) (preambleLength:int) (numbers:int64 array) =
     let currentNumber = numbers.[currentIndex]
     let hasPair = Array.toList previousNumbers
                   |> comb 2
-                  |> List.map (fun x -> (List.sum x) = currentNumber)
-                  |> Seq.reduce (||)
+                  |> List.tryFind (fun x -> (List.sum x) = currentNumber)
+                  |> Option.isSome
     match (hasPair, currentIndex + 1 < numbers.Length) with
     | (false, _ ) -> Some(currentNumber)
     | (_, true) -> solution1 (startIndex + 1) preambleLength numbers
     | _ -> None
 
-let rec findSlice (searchNumber:int64) (windowLength:int) (numbers: int64 array) =
-    let slidingWindow = seq { for i in 0 .. (numbers.Length-windowLength) -> numbers.[i..(i+windowLength-1)] }
-    let result = Seq.tryFind (fun x -> Seq.sum x = searchNumber) slidingWindow
-    match result with
-    | Some result -> (Seq.min result) + (Seq.max result)
-    | None -> findSlice searchNumber (windowLength + 1) numbers
+let findSlice (searchNumber:int64) (numbers: int64 array) =
+    let slidingWindows = seq { for windowLength in 2..numbers.Length-1 do 
+                                 for i in 0 .. (numbers.Length-windowLength) -> numbers.[i..(i+windowLength-1)] }
+    Seq.tryFind (fun x -> Seq.sum x = searchNumber) slidingWindows
+    |> Option.map (fun sequence -> (Seq.min sequence) + (Seq.max sequence))
 
 let dataExample = File.ReadAllText "input/09_example"
-let data = File.ReadAllText "input/09"
-
 let sol1Example = parseInput dataExample |> solution1 0 5
+
+let data = File.ReadAllText "input/09"
 let sol1 = parseInput data |> solution1 0 25
-let sol2 = sol1 |> Option.get |> (fun x -> findSlice x 2 (parseInput data))
+let sol2 = sol1 |> Option.map (fun x -> findSlice x (parseInput data)) |> Option.flatten
