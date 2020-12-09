@@ -10,8 +10,8 @@ type OpCode =
 type Instruction = { opCode: OpCode; count: int }
 
 type ProgramResult =
-    | LoopFailure of int
-    | JumpOutOfProgramFailure
+    | InfiniteLoopFailure of int
+    | InvalidJumpFailure
     | Success of int
 
 let parseInstruction (line: string) =
@@ -32,13 +32,16 @@ let parseInput (input: string) =
     input.Split('\n', StringSplitOptions.RemoveEmptyEntries)
     |> Array.map parseInstruction
 
-let executeProgram (flipInstruction: int) (program: Instruction array) =
+let executeProgram (program: Instruction array) (flipInstruction: int) =
+
     let mutable acc = 0
     let mutable currentInstruction = 0
     let mutable visitedInstructions = Set.empty
+    let outOfBounds () = currentInstruction < 0 || currentInstruction > program.Length
+    let terminated () = currentInstruction = program.Length
+    let inInfiniteLoop () = visitedInstructions.Contains(currentInstruction)
 
-    while not (visitedInstructions.Contains(currentInstruction))
-          && (currentInstruction < program.Length) && (currentInstruction >= 0) do
+    while not (terminated() || inInfiniteLoop() || outOfBounds()) do
 
         let op = program.[currentInstruction]
         let flip = currentInstruction = flipInstruction
@@ -53,20 +56,21 @@ let executeProgram (flipInstruction: int) (program: Instruction array) =
         | (JMP, false)
         | (NOP, true) -> currentInstruction <- currentInstruction + op.count - 1
 
-    if currentInstruction = program.Length then Success(acc)
-    else if currentInstruction > program.Length || currentInstruction < 0 then JumpOutOfProgramFailure
-    else LoopFailure(acc)
+    match outOfBounds(), inInfiniteLoop() with
+    | (true, _) -> InvalidJumpFailure
+    | (_, true) -> InfiniteLoopFailure(acc)
+    | _ -> Success(acc)
 
-let solution1 program =
-    program
-    |> executeProgram -1
+
+let solution1 program = executeProgram program -1
 
 let solution2 (program: Instruction array) =
     program
-    |> Seq.mapi (fun flipInstruction _ -> executeProgram flipInstruction program)
-    |> Seq.find (fun result -> match result with
-                                | Success(_) -> true
-                                | _ -> false)
+    |> Seq.mapi (fun flipInstruction _ -> executeProgram program flipInstruction)
+    |> Seq.find (fun result ->
+        match result with
+        | Success (_) -> true
+        | _ -> false)
 
 let data = File.ReadAllText "input/08"
 
