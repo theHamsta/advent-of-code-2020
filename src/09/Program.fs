@@ -1,10 +1,6 @@
 open System.IO
 open System
 
-let tee thing =
-    printfn "%A" thing
-    thing
-
 // https://stackoverflow.com/questions/1222185/most-elegant-combinations-of-elements-in-f
 let rec comb n l = 
     match n, l with
@@ -35,7 +31,6 @@ let rec findSlice (searchNumber:int64) (windowLength:int) (numbers: int64 array)
     match result with
     | Some result -> (Seq.min result) + (Seq.max result)
     | None -> findSlice searchNumber (windowLength + 1) numbers
-
 
 let dataExample = File.ReadAllText "input/09_example"
 let data = File.ReadAllText "input/09"
