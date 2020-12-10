@@ -28,3 +28,24 @@ let data = File.ReadAllText "input/10"
 let parsed = parseInput data |> Array.sort
 let sol1 = solution1 parsed
 let sol2 = solution2 (set parsed) (Array.max parsed + 3) (Dictionary()) 0
+
+/// Alternative: differences on sorted array
+let rec solution2Alt (sortedArray: int array) (cache: Dictionary<int*int,int64>) prev index = 
+    let cur = sortedArray.[index]
+    let cachedCall a b = if cache.ContainsKey((a,b)) then
+                            cache.[(a,b)]
+                         else
+                            let result = (solution2Alt sortedArray cache a b)
+                            cache.[(a,b)] <- result
+                            result
+
+    let take () = cachedCall cur (index + 1)
+    let notTake () = cachedCall prev (index + 1)
+    let isLast () = sortedArray.Length = index + 1
+    match cur - prev with
+        | 1
+        | 2
+        | 3 -> if isLast() then 1L else take() + notTake()
+        | _ -> 0L
+
+let sol22 = solution2Alt parsed (Dictionary()) 0 0
