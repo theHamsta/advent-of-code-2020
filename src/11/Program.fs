@@ -84,7 +84,7 @@ let update2 (src: SeatState array array) (dst: SeatState array array) =
     changes
 
 let run (input: SeatState array array) updateFn =
-    let mutable dst = input
+    let mutable dst = Array.init input.Length (fun y -> Array.copy input.[y])
     let mutable src = Array.init input.Length (fun y -> Array.copy input.[y])
     while updateFn src dst > 0 do
         swap &src &dst
@@ -97,7 +97,6 @@ let parseInput (input: string) =
 let data = File.ReadAllText "input/11"
 let parsed = parseInput data
 let finalState = run parsed update
-let parsed2 = parseInput data
-let finalState2 = run parsed2 update2
+let finalState2 = run parsed update2
 let solution1 = Array.sumBy (fun x -> x |> Seq.filter (fun elt -> elt = Occupied) |> Seq.length) finalState
 let solution2 = Array.sumBy (fun x -> x |> Seq.filter (fun elt -> elt = Occupied) |> Seq.length) finalState2
