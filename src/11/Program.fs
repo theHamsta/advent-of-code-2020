@@ -20,7 +20,12 @@ let swap (left : 'a byref) (right : 'a byref) =
   right <- temp
 
 let findSeat1 (src: SeatState array array) x y dx dy =
-    src.[y+dy].[x+dx]
+    let width = src.[0].Length
+    let height = src.Length
+    if x+ dx >= 0 && y + dy >= 0 && x + dx < width && y + dy < height then
+        src.[y+dy].[x+dx]
+    else
+        Floor
 
 let findSeat2 (src: SeatState array array) x y dx dy =
     let mutable nextSeat = Floor
@@ -42,14 +47,12 @@ let update findSeatFn neighborTolerance (src: SeatState array array) (dst: SeatS
             let current = src.[y].[x]
             for dy in -1..1 do
                 for dx in -1..1 do
-                    try 
-                        if (dx = 0 && dy = 0) then
-                            ()
-                        else 
-                            match (findSeatFn src x y dx dy) with
-                                | Occupied -> occupied <- occupied + 1
-                                | _ -> ()
-                    with _ -> ()
+                    if (dx = 0 && dy = 0) then
+                        ()
+                    else 
+                        match (findSeatFn src x y dx dy) with
+                            | Occupied -> occupied <- occupied + 1
+                            | _ -> ()
             match (occupied, current) with
                 | (0, Empty) -> dst.[y].[x] <- Occupied
                                 changes <- true
