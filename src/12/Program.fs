@@ -22,7 +22,7 @@ let parseInstruction (line: string) =
                         | "F"-> Relative(F)
                         | c -> failwith (sprintf "invalid direction: %A" c) 
                         ;
-           count = int64 regex.Groups.[2].Value })
+           count = int64 (int regex.Groups.[2].Value) })
 
 
 let parseInput (text: string) = 
@@ -35,10 +35,10 @@ let normalizeDir dir = (dir + 360L) % 360L
 
 let move (position:int64*int64) direction count =
     match direction with
-    | 0L -> ((fst position) + count, snd position)
-    | 90L -> ((fst position), (snd position)+ count)
-    | 180L -> ((fst position) - count, snd position)
-    | 270L -> ((fst position) , (snd position) - count)
+    | 0L -> (fst position + count, snd position)
+    | 90L -> (fst position, snd position+ count)
+    | 180L -> (fst position - count, snd position)
+    | 270L -> (fst position , (snd position) - count)
     | d -> failwith (sprintf "unsupported direction %d" d)
     
 let manhatten a b = (abs (fst a - fst b)) + (abs (snd a - snd b))
@@ -56,12 +56,16 @@ let followInstructions (initialState: ShipState) (instructions:NavigationInstruc
                                                                         | W -> { state with position = move state.position 180L instruction.count}
                                                                         | S -> { state with position = move state.position 270L instruction.count}) initialState
 
-let rotatePos pos rotationDirection =
-    let (x,y) = pos
-    match rotationDirection with
+let rotatePos pos rotationDirection amount =
+    let mutable (x,y) = pos
+    for _ in 1L..(amount / 90L) do
+        let r = (match rotationDirection with
                     | L -> -y, x
                     | R -> y, -x
-                    | _ -> failwith "invalid rotation"
+                    | _ -> failwith "invalid rotation")
+        x <- fst r
+        y <- snd r
+    (x,y)
 
 let followInstructions2 (initialState: ShipState) initialStateShip (instructions:NavigationInstruction seq) = 
     instructions
@@ -70,7 +74,7 @@ let followInstructions2 (initialState: ShipState) initialStateShip (instructions
         match instruction.direction with
           | Relative r -> match r with
                             | L 
-                            | R -> { state with position = rotatePos state.position r }, shipPosition
+                            | R -> { state with position = rotatePos state.position r instruction.count }, shipPosition
                             | F -> state, { shipPosition with position = (fst shipPosition.position + fst state.position * instruction.count,
                                                                           snd shipPosition.position + snd state.position * instruction.count) }
           | Absolute a -> match a with
