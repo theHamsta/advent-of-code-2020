@@ -10,22 +10,20 @@ type NavigationInstruction = { direction: NavigationDirection; count: int64 }
 type ShipState = { position: int64*int64; direction: int64 }
 
 let parseInstruction (line: string) =
-    try 
-        let regex = Regex.Match(line, @"(\w)(\d+)")
+    let regex = Regex.Match(line, @"(\w)(\d+)")
 
-        Some({ direction = match regex.Groups.[1].Value with
-                            | "N" -> Absolute(N)
-                            | "S"-> Absolute(S)
-                            | "W"-> Absolute(W)
-                            | "E"-> Absolute(E)
-                            | "L" -> Relative(L)
-                            | "R"-> Relative(R)
-                            | "F"-> Relative(F)
-                            | c -> failwith (sprintf "invalid direction: %A" c) 
-                            ;
-               count = int64 regex.Groups.[2].Value })
+    Some({ direction = match regex.Groups.[1].Value with
+                        | "N" -> Absolute(N)
+                        | "S"-> Absolute(S)
+                        | "W"-> Absolute(W)
+                        | "E"-> Absolute(E)
+                        | "L" -> Relative(L)
+                        | "R"-> Relative(R)
+                        | "F"-> Relative(F)
+                        | c -> failwith (sprintf "invalid direction: %A" c) 
+                        ;
+           count = int64 regex.Groups.[2].Value })
 
-    with _ -> None
 
 let parseInput (text: string) = 
     text.Split("\n", StringSplitOptions.RemoveEmptyEntries)
@@ -43,7 +41,7 @@ let move (position:int64*int64) direction count =
     | 270L -> ((fst position) , (snd position) - count)
     | d -> failwith (sprintf "unsupported direction %d" d)
     
-let manhatten a b = (abs ((fst a) - (fst b))) + (abs ((snd a) - (snd b)))
+let manhatten a b = (abs (fst a - fst b)) + (abs (snd a - snd b))
 
 let followInstructions (initialState: ShipState) (instructions:NavigationInstruction seq) = 
     instructions
@@ -58,15 +56,12 @@ let followInstructions (initialState: ShipState) (instructions:NavigationInstruc
                                                                         | W -> { state with position = move state.position 180L instruction.count}
                                                                         | S -> { state with position = move state.position 270L instruction.count}) initialState
 
-let rotatePos pos rotationDirection shipPos =
+let rotatePos pos rotationDirection =
     let (x,y) = pos
-    let (dx,dy) = shipPos
-    let (X,Y) = x + dx, y + dy
-    let (xx, yy) = match rotationDirection with
-                    | L -> X - Y, X + Y
-                    | R -> X + Y, X - Y
+    match rotationDirection with
+                    | L -> -y, x
+                    | R -> y, -x
                     | _ -> failwith "invalid rotation"
-    xx + dx, yy + dy
 
 let followInstructions2 (initialState: ShipState) initialStateShip (instructions:NavigationInstruction seq) = 
     instructions
@@ -75,24 +70,24 @@ let followInstructions2 (initialState: ShipState) initialStateShip (instructions
         match instruction.direction with
           | Relative r -> match r with
                             | L 
-                            | R -> { state with position = rotatePos state.position r shipPosition.position }, shipPosition
-                            | F -> state, { shipPosition with position = ((fst shipPosition.position) + (((fst state.position) - (fst shipPosition.position)) * instruction.count),
-                                                                          ((snd shipPosition.position) + ((snd state.position)- (snd shipPosition.position)) * instruction.count)) }
+                            | R -> { state with position = rotatePos state.position r }, shipPosition
+                            | F -> state, { shipPosition with position = (fst shipPosition.position + fst state.position * instruction.count,
+                                                                          snd shipPosition.position + snd state.position * instruction.count) }
           | Absolute a -> match a with
                             | E -> { state with position = move state.position 0L instruction.count}, shipPosition
                             | N -> { state with position = move state.position 90L instruction.count}, shipPosition
                             | W -> { state with position = move state.position 180L instruction.count}, shipPosition
                             | S -> { state with position = move state.position 270L instruction.count}, shipPosition)
                 (initialState, initialStateShip)
-    |> fst
+    |> snd
 
 
 let initialState = { position = (0L,0L); direction = 0L}
 let initialStateWaypoint = { position = (10L,1L); direction = 0L}
-let data = File.ReadAllText "input/12_example"
+let data = File.ReadAllText "input/12"
 let parsed = parseInput data
 let pos1 = followInstructions initialState parsed
 let solution1 = manhatten pos1.position initialState.position
 let pos2 = followInstructions2 initialStateWaypoint initialState parsed
-let solution2 = manhatten pos2.position initialStateWaypoint.position
+let solution2 = manhatten pos2.position initialState.position
 
