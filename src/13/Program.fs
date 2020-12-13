@@ -83,6 +83,6 @@ let busSpec =
 let product =
     Array.fold (fun a (_, b) -> a * b) 1L busSpec
 
-let sol2 = solution2 busSpec 2 [ 1L ] 1L
+let sol2 = solution2 busSpec 1 [ 1L ] 1L
 //max: 3048743993142809
 //min: 100000000000000
