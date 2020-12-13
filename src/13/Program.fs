@@ -11,7 +11,7 @@ let parseInput (text: string) =
     let splits =
         text.Split("\n", StringSplitOptions.RemoveEmptyEntries)
 
-    { startTime = int64 splits.[0] |> int64
+    { startTime = int64 splits.[0]
       busses =
           splits.[1]
               .Split(",", StringSplitOptions.RemoveEmptyEntries)
