@@ -51,10 +51,8 @@ let rec comb n l =
     | _, [] -> []
     | k, (x::xs) -> List.map ((@) [x]) (comb (k-1) xs) @ comb k xs
 
-let numberGenerator (solutions: (int64 list) option) (prevPeriod:int64) (curPeriod:int64) =
-    match solutions with
-    | None -> seq { for t in 1L..curPeriod -> t }
-    | Some sol -> seq { for s in sol do
+let numberGenerator solutions prevPeriod curPeriod =
+    seq { for s in solutions do
                                 let mutable t = 1L
                                 let mutable n = s + t * prevPeriod
                                 while n < curPeriod do
@@ -63,19 +61,17 @@ let numberGenerator (solutions: (int64 list) option) (prevPeriod:int64) (curPeri
                                     yield n
                     }
 
-let rec solution2 (busSpec: (int64*int64) array) index prevSolutions = 
+let rec solution2 (busSpec: (int64*int64) array) index prevSolutions prevPeriod = 
     if index = busSpec.Length - 1 then
-        Seq.head (Option.get prevSolutions)
+        Seq.head prevSolutions
     else
         printfn "%i %A" index prevSolutions
-        let lessBusses = busSpec.[0..index]
         let moreBusses = busSpec.[0..index+1]
-        let prevPeriod = Array.fold (fun a (_,b)  -> a*b) 1L lessBusses
         let curPeriod = Array.fold (fun a (_,b)  -> a*b) 1L moreBusses
         let solutions = numberGenerator prevSolutions prevPeriod curPeriod
                         |> Seq.filter (fun t -> Array.forall (fun (k,v) -> ((k + t) % v = 0L)) moreBusses)
                         |> List.ofSeq
-        solution2 busSpec (index + 1) (Some solutions)
+        solution2 busSpec (index + 1) solutions curPeriod
 
 let data = File.ReadAllText "input/13"
 let parsed = parseInput data
@@ -87,6 +83,6 @@ let busSpec = parsed.busses
               |> Array.ofSeq
 
 let product = Array.fold (fun a (_,b)  -> a*b) 1L busSpec
-let sol2 = solution2 busSpec 2 None
+let sol2 = solution2 busSpec 2 [1L] 1L
 //max: 3048743993142809
 //min: 100000000000000
