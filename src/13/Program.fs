@@ -53,18 +53,20 @@ let numberGenerator solutions prevPeriod curPeriod =
     }
 
 let rec solution2 (busSpec: (int64 * int64) array) index prevSolutions prevPeriod =
-    if index = busSpec.Length - 1 then
+    if index = busSpec.Length then
         Seq.head prevSolutions
     else
         printfn "%i %A" index prevSolutions
-        let moreBusses = busSpec.[0..index + 1]
+        let moreBusses = busSpec.[0..index]
 
         let curPeriod =
             Array.fold (fun a (_, b) -> a * b) 1L moreBusses
 
+        let remainderOk t = (fun (k, v) -> ((k + t) % v = 0L))
+
         let solutions =
             numberGenerator prevSolutions prevPeriod curPeriod
-            |> Seq.filter (fun t -> Array.forall (fun (k, v) -> ((k + t) % v = 0L)) moreBusses)
+            |> Seq.filter (fun t -> busSpec.[index] |> (remainderOk t))
             |> List.ofSeq
 
         solution2 busSpec (index + 1) solutions curPeriod
@@ -83,6 +85,6 @@ let busSpec =
 let product =
     Array.fold (fun a (_, b) -> a * b) 1L busSpec
 
-let sol2 = solution2 busSpec 1 [ 1L ] 1L
+let sol2 = solution2 busSpec 0 [ 1L ] 1L
 //max: 3048743993142809
 //min: 100000000000000
