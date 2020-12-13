@@ -40,9 +40,9 @@ let solution1 (parsed: PuzzleInput) =
     |> Seq.reduce (fun (a, argA) (b, argB) -> if a < b then (a, argA) else (b, argB))
     |> (fun (time, bus) -> time * bus)
 
-let numberGenerator solutions prevPeriod curPeriod =
+let numberGenerator solution prevPeriod curPeriod =
+    let s = solution
     seq {
-        for s in solutions do
             let mutable t = 1L
             let mutable n = s + t * prevPeriod
 
@@ -53,20 +53,19 @@ let numberGenerator solutions prevPeriod curPeriod =
     }
 
 // First solution at f5995c3
-let rec solution2 (busSpec: (int64 * int64) array) index prevSolutions prevPeriod =
+let rec solution2 (busSpec: (int64 * int64) array) index prevSolution prevPeriod =
     if index = busSpec.Length then
-        Seq.head prevSolutions
+        prevSolution
     else
-        printfn "%i %A" index prevSolutions
+        printfn "%i %A" index prevSolution
 
         let currentBus = busSpec.[index]
         let curPeriod = prevPeriod * (snd currentBus)
         let remainderOk t = (fun (k, v) -> ((k + t) % v = 0L))
 
         let solutions =
-            numberGenerator prevSolutions prevPeriod curPeriod
-            |> Seq.filter (fun t -> currentBus |> (remainderOk t))
-            |> List.ofSeq
+            numberGenerator prevSolution prevPeriod curPeriod
+            |> Seq.find (fun t -> currentBus |> (remainderOk t))
 
         solution2 busSpec (index + 1) solutions curPeriod
 
@@ -84,6 +83,6 @@ let busSpec =
 let product =
     Array.fold (fun a (_, b) -> a * b) 1L busSpec
 
-let sol2 = solution2 busSpec 0 [ 1L ] 1L
+let sol2 = solution2 busSpec 0  1L  1L
 //max: 3048743993142809
 //min: 100000000000000
