@@ -57,16 +57,14 @@ let rec solution2 (busSpec: (int64 * int64) array) index prevSolutions prevPerio
         Seq.head prevSolutions
     else
         printfn "%i %A" index prevSolutions
-        let moreBusses = busSpec.[0..index]
 
-        let curPeriod =
-            Array.fold (fun a (_, b) -> a * b) 1L moreBusses
-
+        let currentBus = busSpec.[index]
+        let curPeriod = prevPeriod * (snd currentBus)
         let remainderOk t = (fun (k, v) -> ((k + t) % v = 0L))
 
         let solutions =
             numberGenerator prevSolutions prevPeriod curPeriod
-            |> Seq.filter (fun t -> busSpec.[index] |> (remainderOk t))
+            |> Seq.filter (fun t -> currentBus |> (remainderOk t))
             |> List.ofSeq
 
         solution2 busSpec (index + 1) solutions curPeriod
