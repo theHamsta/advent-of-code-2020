@@ -52,6 +52,7 @@ let numberGenerator solutions prevPeriod curPeriod =
                 yield n
     }
 
+// First solution at f5995c3
 let rec solution2 (busSpec: (int64 * int64) array) index prevSolutions prevPeriod =
     if index = busSpec.Length then
         Seq.head prevSolutions
