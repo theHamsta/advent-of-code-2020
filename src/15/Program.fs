@@ -10,9 +10,8 @@ let startNumbers = data.Split(",", StringSplitOptions.RemoveEmptyEntries) |> Arr
 
 let swappedEnumerate = Seq.mapi (fun i b -> (b, uint64 i))
 
-let getSeq (startNumbers:uint64 array) maxNumber = 
+let getSeq (startNumbers:uint64 array) maxNumber doProgressFn = 
     let length = startNumbers.Length |> uint64
-    let progressBar = new ProgressBar(int maxNumber, "Initial message")
     seq {
         let mutable pastNumbers =  startNumbers |> swappedEnumerate |> Seq.take (startNumbers.Length - 1)|> Map
         let mutable last = startNumbers |> Seq.last
@@ -20,7 +19,7 @@ let getSeq (startNumbers:uint64 array) maxNumber =
             if i < length then
                 startNumbers.[int i]
             else
-                progressBar.Tick()
+                doProgressFn()
                 let lastIndex = i - 1UL
                 let current =  match pastNumbers.TryFind last with
                                 | None -> 0UL
@@ -32,8 +31,13 @@ let getSeq (startNumbers:uint64 array) maxNumber =
     }
 
 
-let solution1 = getSeq startNumbers 2020UL |> Seq.last
+let solution1 = getSeq startNumbers 2020UL id |> Seq.last
 #if INTERACTIVE
 #time
 #endif
-let solution2 = getSeq startNumbers 30000000UL |> Seq.last
+
+let calcSolution2 value =
+    use progressBar = new ProgressBar(int value, "Initial message")
+    getSeq startNumbers value (fun () -> progressBar.Tick()) |> Seq.last
+
+let solution2 = calcSolution2 30000000UL
