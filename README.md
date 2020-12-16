@@ -22,5 +22,5 @@ dotnet run --project src/02 input/02
 Files without a main can be run directly using `dotnet fsi`. Installation:
 
 ```bash
-dotnet tool install -g --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" Microsoft.dotnet-interactive`
+dotnet tool install -g --add-source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json" Microsoft.dotnet-interactive
 ```
