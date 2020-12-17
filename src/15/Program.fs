@@ -32,9 +32,6 @@ let getSeq (startNumbers:uint64 array) maxNumber doProgressFn =
 
 
 let solution1 = getSeq startNumbers 2020UL id |> Seq.last
-#if INTERACTIVE
-#time
-#endif
 
 let calcSolution2 value =
     use progressBar = new ProgressBar(int value, "Initial message")
