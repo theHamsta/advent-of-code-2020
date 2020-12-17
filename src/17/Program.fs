@@ -1,7 +1,6 @@
 open System.IO
 open System
 open System.Collections.Generic
-
 type FieldDict = Dictionary<int * int * int * int, bool>
 
 type Field =
@@ -56,7 +55,6 @@ let run (sourceField:Field) numSteps =
     for i in 1..numSteps do
         dst <- step src dst
         swap &src &dst
-        printfn "Round %i: %i active" i src.CountActive
 
     src
 
