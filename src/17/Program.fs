@@ -1,7 +1,7 @@
 open System.IO
 open System
 open System.Collections.Generic
-type FieldDict = Dictionary<int * int * int * int, bool>
+type FieldDict = HashSet<int * int * int * int>
 
 type Field =
     { fieldDict: FieldDict
@@ -12,7 +12,7 @@ type Field =
 let parseLine (field: Field) (y: int) (line: string) =
     for x in 0 .. line.Length - 1 do
         match line.Chars(x) with
-        | '#' -> field.fieldDict.[(x, y, 0, 0)] <- true
+        | '#' -> ignore(field.fieldDict.Add(x, y, 0, 0))
         | '.' -> ()
         | c -> failwith (sprintf "Invalid char %A" c)
 
@@ -30,11 +30,11 @@ let step (src: Field) (dst: Field) =
         for y in b-1..B+1 do
             for z in c-1..C+1 do
                 for w in d-1..D+1 do
-                    let previous = src.fieldDict.GetValueOrDefault((x,y,z,w), false)
+                    let previous = src.fieldDict.Contains((x,y,z,w))
                     let mutable neighbors = 0
                     for (dx,dy,dz,dw) in OFFSETS do
                         let offset = (x+dx, y+dy,z+dz,w+dw)
-                        if src.fieldDict.ContainsKey(offset) then neighbors <- neighbors + 1 else ()
+                        if src.fieldDict.Contains(offset) then neighbors <- neighbors + 1 else ()
 
                     let next = match (previous, neighbors) with
                                 | (true, n) when n = 2 || n = 3 -> true
@@ -42,9 +42,9 @@ let step (src: Field) (dst: Field) =
                                 | _  -> false
 
                     if next then
-                        dst.fieldDict.[(x,y,z,w)] <- true
+                        dst.fieldDict.Add((x,y,z,w))
                     else
-                        ignore (dst.fieldDict.Remove((x,y,z,w)))
+                        dst.fieldDict.Remove((x,y,z,w))
     { dst with min=(a-1,b-1,c-1,d-1); max=(A+1,B+1,C+1,D+1)}
 
 
@@ -52,14 +52,14 @@ let run (sourceField:Field) numSteps =
     let mutable dst = { sourceField with fieldDict = FieldDict() }
     let mutable src = sourceField
     //printfn "Round 0: %i active" src.CountActive
-    for i in 1..numSteps do
+    for _ in 1..numSteps do
         dst <- step src dst
         swap &src &dst
 
     src
 
 let mutable field =
-    { fieldDict = Dictionary<int * int * int * int, bool>()
+    { fieldDict = HashSet<int * int * int * int>()
       min = (0,0,0,0)
       max = (0,0,0,0) }
 
@@ -73,6 +73,6 @@ ignore (
         0
 )
 
-field <- {field with max = (Seq.fold (fun (a,b,c,d) (x,y,z,w) -> (max a x, max b y, max c z, max d w)) field.max field.fieldDict.Keys) }
+field <- {field with max = (Seq.fold (fun (a,b,c,d) (x,y,z,w) -> (max a x, max b y, max c z, max d w)) field.max field.fieldDict) }
     
 let final1 = (run field 6).CountActive
