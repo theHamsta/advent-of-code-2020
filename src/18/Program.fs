@@ -34,15 +34,11 @@ let createParser plusPrecedence =
 
     let opp =
         new OperatorPrecedenceParser<AstNode, unit, unit>()
-
     let expr = opp.ExpressionParser
-
     let term =
         choice [ pNumber .>> ws
                  between (str_ws "(") (str_ws ")") expr ]
-
     opp.TermParser <- term
-
     opp.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
     opp.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
 
