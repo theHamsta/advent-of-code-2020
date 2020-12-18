@@ -28,19 +28,18 @@ let rec evaluateExpression (expression: AstNode) =
         | Times -> lhs * rhs
 
 let createParser plusPrecedence =
-    let ws = spaces
-    let str_ws s = pstring s >>. ws
     let pNumber = pint64 .>> spaces |>> Number
 
     let pOperatorPrecedence =
         new OperatorPrecedenceParser<AstNode, unit, unit>()
     let pExpr = pOperatorPrecedence.ExpressionParser
     let pTerm =
-        choice [ pNumber .>> ws
-                 between (str_ws "(") (str_ws ")") pExpr ]
+        choice [ pNumber
+                 between (pstring "(" .>> spaces) (pstring ")".>> spaces) pExpr ]
+
     pOperatorPrecedence.TermParser <- pTerm
-    pOperatorPrecedence.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
-    pOperatorPrecedence.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
+    pOperatorPrecedence.AddOperator(InfixOperator("+", spaces, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
+    pOperatorPrecedence.AddOperator(InfixOperator("*", spaces, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
     ///Direct solution: OperatorPrecedenceParser<int64, unit, unit>()
     //pOperatorPrecedence.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (+)))
     //pOperatorPrecedence.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (*)))
