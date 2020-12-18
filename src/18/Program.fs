@@ -29,8 +29,8 @@ let rec evaluateExpression (expression: AstNode) =
 
 let createParser plusPrecedence =
     let ws = spaces
-    let pNumber = pint64 .>> spaces |>> Number
     let str_ws s = pstring s >>. ws
+    let pNumber = pint64 .>> spaces |>> Number
 
     let opp =
         new OperatorPrecedenceParser<AstNode, unit, unit>()
@@ -41,6 +41,9 @@ let createParser plusPrecedence =
     opp.TermParser <- term
     opp.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
     opp.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
+    ///Direct solution: OperatorPrecedenceParser<int64, unit, unit>()
+    //opp.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (+)))
+    //opp.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (*)))
 
     (fun text ->
         match run expr text with
