@@ -10,10 +10,10 @@ type Operator =
     | Plus
     | Times
 
-type BinaryOperation<'a> = { lhs: 'a; op: Operator; rhs: 'a }
+type BinaryOperation<'operand,'op> = { lhs: 'operand; op: 'op; rhs: 'operand }
 
 type AstNode =
-    | BinOp of BinaryOperation<AstNode>
+    | BinOp of BinaryOperation<AstNode, Operator>
     | Number of int64
 
 let rec evaluateExpression (expression: AstNode) =
@@ -32,21 +32,21 @@ let createParser plusPrecedence =
     let str_ws s = pstring s >>. ws
     let pNumber = pint64 .>> spaces |>> Number
 
-    let opp =
+    let pOperatorPrecedence =
         new OperatorPrecedenceParser<AstNode, unit, unit>()
-    let expr = opp.ExpressionParser
-    let term =
+    let pExpr = pOperatorPrecedence.ExpressionParser
+    let pTerm =
         choice [ pNumber .>> ws
-                 between (str_ws "(") (str_ws ")") expr ]
-    opp.TermParser <- term
-    opp.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
-    opp.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
+                 between (str_ws "(") (str_ws ")") pExpr ]
+    pOperatorPrecedence.TermParser <- pTerm
+    pOperatorPrecedence.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
+    pOperatorPrecedence.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Times; rhs = y })))
     ///Direct solution: OperatorPrecedenceParser<int64, unit, unit>()
-    //opp.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (+)))
-    //opp.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (*)))
+    //pOperatorPrecedence.AddOperator(InfixOperator("+", ws, plusPrecedence, Associativity.Left, (+)))
+    //pOperatorPrecedence.AddOperator(InfixOperator("*", ws, 1, Associativity.Left, (*)))
 
     (fun text ->
-        match run expr text with
+        match run pExpr text with
         | Success(ast, _, _) -> ast
         | Failure(err, _, _) -> failwith err)
 
