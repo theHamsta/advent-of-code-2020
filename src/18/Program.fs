@@ -28,16 +28,15 @@ let rec evaluateExpression (expression: AstNode) =
         | Times -> lhs * rhs
 
 let createParser plusPrecedence =
-    let pNumber = pint64 .>> spaces |>> Number
+    let str text = (pstring text .>> spaces)
 
+    let pNumber = pint64 .>> spaces |>> Number
     let pOperatorPrecedence =
         new OperatorPrecedenceParser<AstNode, unit, unit>()
     let pExpr = pOperatorPrecedence.ExpressionParser
-    let lParen = (pstring "(" .>> spaces)
-    let rParen = (pstring ")" .>> spaces)
     let pTerm =
         choice [ pNumber
-                 between lParen rParen pExpr ]
+                 between (str "(") (str ")") pExpr ]
 
     pOperatorPrecedence.TermParser <- pTerm
     pOperatorPrecedence.AddOperator(InfixOperator("+", spaces, plusPrecedence, Associativity.Left, (fun x y -> BinOp { lhs = x; op = Plus; rhs = y })))
