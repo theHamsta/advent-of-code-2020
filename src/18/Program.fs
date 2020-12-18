@@ -16,10 +16,6 @@ type AstNode =
     | BinOp of BinaryOperation<AstNode>
     | Number of int64
 
-let pOperator: Parser<Operator, unit> =
-    choice [ stringReturn "+" Plus
-             stringReturn "*" Times ]
-
 let rec evaluateExpression (expression: AstNode) =
     match expression with
     | Number n -> n
