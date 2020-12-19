@@ -14,12 +14,6 @@ type Input = {rules: Map<int64,Rule>
 
 type MaybeParser = JustRule of Rule | JustParser of Parser<unit,unit>
 
-let toParserOption p = match p with
-                         | JustRule _ -> None
-                         | JustParser p -> Some p
-let isParser = toParserOption >> Option.isSome
-let toParser = toParserOption >> Option.get
-
 let createParser =
     let ws = many (pstring " ")
     let str text = pstring text .>> ws
