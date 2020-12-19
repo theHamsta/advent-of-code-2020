@@ -37,13 +37,6 @@ let createParser =
         | Success(input, _, _) -> input
         | Failure(err, _, _) -> failwith err)
 
-let skipAsManyTillEnd (a:Parser<unit,unit>) (b:Parser<unit,unit>) =
-    choice (seq {for i in 1..60 do
-                    let mutable xs = a
-                    for _ in 1..(i-1) do xs <- xs .>> a
-                    for _ in 1..i do xs <- xs .>> b
-                    yield (followedBy eof) .>> xs})
-
 let many1TillResult12 p endp =
     many1 (notFollowedBy endp >>. p) .>>. endp 
 
