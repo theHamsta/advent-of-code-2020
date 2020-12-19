@@ -4,6 +4,7 @@
 
 open System.IO
 open FParsec
+open System.Collections.Generic
 
 type Rule = DisjunctionRule of int64 list list | SingleCharRule of char
 type Input = {rules: Map<int64,Rule>
@@ -36,34 +37,34 @@ let createParser =
         | Success(input, _, _) -> input
         | Failure(err, _, _) -> failwith err)
 
+let (<!>) (p: Parser<_,_>) label : Parser<_,_> =
+    p
+    //fun stream ->
+        //printfn "%A: Entering %s" stream.Position label
+        //let reply = p stream
+        //printfn "%A: Leaving %s (%A)" stream.Position label reply.Status
+        //reply
 
 let solution1 (input:Input) =
-    let mutable parsers = Map.empty 
-    let mutable maybeParsers = Map.map (fun _ r -> JustRule r) input.rules 
-    let indexToMaybeParser i = maybeParsers.[i]
-    while parsers.Count < input.rules.Count do
-        maybeParsers <- Map.map (fun _ rule -> match rule with
-                                                 | JustParser _ -> rule
-                                                 | JustRule (SingleCharRule c) -> JustParser (skipChar c)
-                                                 | JustRule (DisjunctionRule rules) -> 
-                                                     // Functional programming madness!
-                                                     let allReferencedRules = Seq.collect (Seq.map indexToMaybeParser) rules
-                                                     if Seq.forall isParser allReferencedRules then
-                                                         // Combine to a single parser
-                                                         choice (Seq.map (fun x -> Seq.map (indexToMaybeParser >> toParser) x
-                                                                                   |> Seq.reduce (>>?)) rules)
-                                                         |> JustParser
-                                                     else rule
-                                                 )
-                                            maybeParsers
-        parsers <- Map.filter (fun _ v -> isParser v) maybeParsers
-    let parsers = Map.map (fun _ v -> toParser v) parsers
+    let parsers = Dictionary<int64,Parser<unit,unit>>()
+    let indexToParser i = parsers.[i]
+
+    Map.map (fun k rule -> match rule with
+                             | SingleCharRule c -> parsers.[k] <- ((skipChar c |> attempt) <!> sprintf "rule %i: %A" k c)
+                             | DisjunctionRule rules -> 
+                                 // Combine to a single parser with fire!
+                                 parsers.[k] <- attempt (parse.Delay(fun () -> choice (Seq.map (fun x -> Seq.map (indexToParser) x |> Seq.reduce (>>?) |> attempt) rules) |> attempt)) <!> sprintf "rule %i" k
+                             ) input.rules |> ignore
+
     let rule0Parser = parsers.[int64 0] .>> eof
-    Seq.map (run rule0Parser) input.words // |> List.ofSeq
+    Seq.map (run rule0Parser) input.words
     |> Seq.sumBy (fun result -> match result with
                                 | Success _ -> 1
                                 | Failure _ -> 0)
+    //|> Seq.zip input.words |> List.ofSeq
 
 let data = File.ReadAllText "input/19"
-let parsed = (createParser) data
-let sol1 = solution1 parsed
+let parser = (createParser)
+let sol1 = solution1 (parser data)
+let data2 = File.ReadAllText "input/19_example4"
+let sol2 = solution1 (parser data2)
