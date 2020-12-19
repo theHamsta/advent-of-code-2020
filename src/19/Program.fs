@@ -37,34 +37,55 @@ let createParser =
         | Success(input, _, _) -> input
         | Failure(err, _, _) -> failwith err)
 
-let (<!>) (p: Parser<_,_>) label : Parser<_,_> =
-    p
-    //fun stream ->
-        //printfn "%A: Entering %s" stream.Position label
-        //let reply = p stream
-        //printfn "%A: Leaving %s (%A)" stream.Position label reply.Status
-        //reply
+let skipAsManyTillEnd (a:Parser<unit,unit>) (b:Parser<unit,unit>) =
+    choice (seq {for i in 1..60 do
+                    let mutable xs = a
+                    for _ in 1..(i-1) do xs <- xs .>> a
+                    for _ in 1..i do xs <- xs .>> b
+                    yield (followedBy eof) .>> xs})
 
-let solution1 (input:Input) =
+let many1TillResult12 p endp =
+    many1 (notFollowedBy endp >>. p) .>>. endp 
+
+let resultSatisfies predicate msg (p: Parser<_,_>) : Parser<_,_> =
+    let error = messageError msg
+    fun stream ->
+      let state = stream.State
+      let reply = p stream
+      if reply.Status <> Ok || predicate reply.Result then reply
+      else
+          stream.BacktrackTo(state) // backtrack to beginning
+          Reply(Error, error)
+
+let solution1 (input:Input) hackRules =
     let parsers = Dictionary<int64,Parser<unit,unit>>()
     let indexToParser i = parsers.[i]
 
     Map.map (fun k rule -> match rule with
-                             | SingleCharRule c -> parsers.[k] <- ((skipChar c |> attempt) <!> sprintf "rule %i: %A" k c)
+                             | SingleCharRule c -> parsers.[k] <- skipChar c |> attempt
                              | DisjunctionRule rules -> 
                                  // Combine to a single parser with fire!
-                                 parsers.[k] <- attempt (parse.Delay(fun () -> choice (Seq.map (fun x -> Seq.map (indexToParser) x |> Seq.reduce (>>?) |> attempt) rules) |> attempt)) <!> sprintf "rule %i" k
+                                 parsers.[k] <- attempt (parse.Delay(fun () -> choice (Seq.map (fun x -> Seq.map (indexToParser) x |> Seq.reduce (>>?) |> attempt) rules) |> attempt))
                              ) input.rules |> ignore
 
-    let rule0Parser = parsers.[int64 0] .>> eof
+    let mutable rule0Parser = parsers.[int64 0] .>> eof
+    if hackRules then
+        parsers.Remove(int64 8) |> ignore
+        parsers.Remove(int64 11) |> ignore
+        let b = (many1Till (indexToParser 31L >>% 1) eof)
+        let a = (many1TillResult12 (indexToParser 42L >>% 1) b) |> resultSatisfies (fun (a,b) -> Seq.sum a = Seq.sum b) "!"
+        rule0Parser <- (skipMany1Till (indexToParser 42L) a)
+    else
+        ()
+
     Seq.map (run rule0Parser) input.words
     |> Seq.sumBy (fun result -> match result with
-                                | Success _ -> 1
+                                | Success (result,_,_) -> printfn "%A" result;1
                                 | Failure _ -> 0)
     //|> Seq.zip input.words |> List.ofSeq
 
 let data = File.ReadAllText "input/19"
 let parser = (createParser)
-let sol1 = solution1 (parser data)
-let data2 = File.ReadAllText "input/19_example4"
-let sol2 = solution1 (parser data2)
+let sol1 = solution1 (parser data) false
+let data2 = File.ReadAllText "input/19"
+let sol2 = solution1 (parser data2) true
