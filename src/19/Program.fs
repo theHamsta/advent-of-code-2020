@@ -49,30 +49,26 @@ let solution1 (input:Input) hackRules =
     let indexToParser i = parsers.[i]
 
     Map.map (fun k rule -> match rule with
-                             | SingleCharRule c -> parsers.[k] <- skipChar c |> attempt
+                             | SingleCharRule c -> parsers.[k] <- skipChar c
                              | DisjunctionRule rules -> 
                                  // Combine to a single parser with fire!
-                                 parsers.[k] <- attempt (parse.Delay(fun () -> choice (Seq.map (fun x -> Seq.map (indexToParser) x |> Seq.reduce (>>?) |> attempt) rules) |> attempt))
+                                 parsers.[k] <- (parse.Delay(fun () -> choice (Seq.map (fun x -> Seq.map (indexToParser) x |> Seq.reduce (>>?)) rules)))
                              ) input.rules |> ignore
 
-    let mutable rule0Parser = parsers.[int64 0] .>> eof
-    if hackRules then
-        parsers.Remove(int64 8) |> ignore
-        parsers.Remove(int64 11) |> ignore
-        let b = (many1Till (indexToParser 31L >>% 1) eof)
-        let a = (many1TillResult12 (indexToParser 42L >>% 1) b) |> resultSatisfies (fun (a,b) -> Seq.sum a = Seq.sum b) "!"
-        rule0Parser <- (skipMany1Till (indexToParser 42L) a)
-    else
-        ()
+    let rule0Parser = if hackRules then
+                           let b = (many1Till (indexToParser 31L >>% 1) eof)
+                           let a = (many1TillResult12 (indexToParser 42L >>% 1) b) |> resultSatisfies (fun (a,b) -> Seq.sum a = Seq.sum b) "!"
+                           (skipMany1Till (indexToParser 42L) a)
+                      else
+                           parsers.[int64 0] .>> eof
 
     Seq.map (run rule0Parser) input.words
     |> Seq.sumBy (fun result -> match result with
-                                | Success (result,_,_) -> printfn "%A" result;1
+                                | Success _ -> 1
                                 | Failure _ -> 0)
     //|> Seq.zip input.words |> List.ofSeq
 
 let data = File.ReadAllText "input/19"
 let parser = (createParser)
 let sol1 = solution1 (parser data) false
-let data2 = File.ReadAllText "input/19"
-let sol2 = solution1 (parser data2) true
+let sol2 = solution1 (parser data) true
