@@ -61,7 +61,7 @@ let maybeContainedByTable (dishes: Dish seq) =
     |> Map
 
 let safeIngredients (dishes: Dish seq) =
-    let allIngredients = dishes |> Seq.map (fun  d -> d.ingredients) |> Set.unionMany   
+    let allIngredients = dishes |> Seq.map (fun d -> d.ingredients) |> Set.unionMany   
     let suspipiousIngredients = (maybeContainedByTable dishes)
                                 |> Dict.values
                                 |> Set.unionMany
@@ -81,8 +81,8 @@ let solve2 (dishes:Dish seq) =
         let assignedIngredients = Set.unionMany (Dict.values safeAssigned)
         maybeInIngredient <- Map.map (fun _ v -> Set.difference v assignedIngredients) unknown
         for (k,v) in Dict.toSeq safeAssigned do
-            safeAssignments <- safeAssignments.Add(k,v)
-    safeAssignments |> Map.map (fun _ v -> Seq.head v)
+            safeAssignments <- safeAssignments.Add(k,Seq.head v)
+    safeAssignments
 
 let parse = createParser
 let input = File.ReadAllText "input/21" |> parse
