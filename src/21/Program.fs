@@ -3,7 +3,6 @@
 #endif
 
 open System.IO
-open System
 open System.Collections.Generic
 open FParsec
 
@@ -12,7 +11,6 @@ let tee thing =
     thing
 
 module Dict =
-  open System.Collections.Generic
   let toSeq d = d |> Seq.map (fun (KeyValue(k,v)) -> (k,v))
   let toArray (d:IDictionary<_,_>) = d |> toSeq |> Seq.toArray
   let toList (d:IDictionary<_,_>) = d |> toSeq |> Seq.toList
