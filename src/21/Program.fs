@@ -53,7 +53,7 @@ let createParser =
         | Failure (err, _, _) -> failwith err)
 
 
-let isMaybeInTable (dishes: Dish seq) =
+let maybeContainedByTable (dishes: Dish seq) =
     let allergens = dishes |> Seq.map (fun  d -> d.allergens) |> Set.unionMany   
     Seq.map (fun allergen -> allergen, Seq.filter (fun d -> d.allergens.Contains(allergen)) dishes
                                        |> Seq.map (fun d -> d.ingredients)
@@ -62,7 +62,7 @@ let isMaybeInTable (dishes: Dish seq) =
 
 let safeIngredients (dishes: Dish seq) =
     let allIngredients = dishes |> Seq.map (fun  d -> d.ingredients) |> Set.unionMany   
-    let suspipiousIngredients = (isMaybeInTable dishes)
+    let suspipiousIngredients = (maybeContainedByTable dishes)
                                 |> Dict.toSeq
                                 |> Seq.map (fun (_,v) -> v)
                                 |> Set.unionMany
@@ -73,7 +73,7 @@ let countOccurences (dishes: Dish seq) (ingredients: string Set) =
                         |>Seq.length) dishes
 
 let solve2 (dishes:Dish seq) =
-    let mutable maybeInIngredient = isMaybeInTable dishes
+    let mutable maybeInIngredient = maybeContainedByTable dishes
     let mutable safeAssignments = Map.empty
 
     // This is exactly the same as with the grammar assignments
