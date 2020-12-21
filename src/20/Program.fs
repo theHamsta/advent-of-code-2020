@@ -158,10 +158,10 @@ let rec extendSolution puzzleSizeX
     match emptyField with
     | Some (x, y) ->
         let leftRequirements =
-            getNeighbor (x - 1) y TOP currentSolution lookUp
+            getNeighbor (x - 1) y LEFT currentSolution lookUp
 
         let topRequirements =
-            getNeighbor x (y - 1) LEFT currentSolution lookUp
+            getNeighbor x (y - 1) TOP currentSolution lookUp
 
         let possibilities =
             match (leftRequirements, topRequirements) with
@@ -221,10 +221,10 @@ let checkSolution (solution: Solution) =
     for x in 1 .. puzzleSize - 1 do
         for y in 0 .. puzzleSize - 1 do
             let left =
-                solution.[(x - 1, y)].tileConfiguration.[LEFT]
+                solution.[(x - 1, y)].tileConfiguration.[RIGHT]
 
             let right =
-                solution.[(x, y)].tileConfiguration.[RIGHT]
+                solution.[(x, y)].tileConfiguration.[LEFT]
 
             assert (left = right)
 
@@ -233,7 +233,6 @@ let assemblePuzzle (solution: Solution) =
         round (sqrt (float solution.Count)) |> int
 
     let pieceSize = solution.[(0, 0)].tile.GetLength(0) - 2
-    printfn "puzzleSize %i p %i" puzzleSize pieceSize
 
     Array2D.init (puzzleSize * pieceSize) (puzzleSize * pieceSize) (fun x y ->
         solution.[(x / pieceSize, y / pieceSize)].tile.[1 + (x % pieceSize), 1 + (y % pieceSize)])
@@ -287,15 +286,14 @@ let parsed = parse data
 
 let solvedPuzzle = solvePuzzle parsed
 let solution1 = solvedPuzzle |> Option.map addCorners
-//solvedPuzzle |> Option.map checkSolution |> ignore
+solvedPuzzle |> Option.map checkSolution |> ignore
 
 let monsterExample =
     (File.ReadAllText "input/seamonster" |> parse).[0]
-//let monsterTemplate =
-    //(File.ReadAllText "input/monster-template" |> parse).[0]
-//let exampleRoughness =countWaterRoughness monsterTemplate monsterExample
+let monsterTemplate =
+    (File.ReadAllText "input/monster-template" |> parse).[0]
+let exampleRoughness =countWaterRoughness monsterTemplate monsterExample
 
 let assembledPuzzle = solvedPuzzle |> Option.map assemblePuzzle
-//assembledPuzzle |> Option.map (compareArrays monsterExample)
-//let solution2 = assembledPuzzle |> Option.map (countWaterRoughness monsterTemplate)
+let solution2 = assembledPuzzle |> Option.map (countWaterRoughness monsterTemplate)
 
