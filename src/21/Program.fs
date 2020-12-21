@@ -73,14 +73,14 @@ let countOccurences (dishes: Dish seq) (ingredients: string Set) =
                         |>Seq.length) dishes
 
 let solve2 (dishes:Dish seq) =
-    let mutable maybeIn = isMaybeInTable dishes
+    let mutable maybeInIngredient = isMaybeInTable dishes
     let mutable safeAssignments = Map.empty
 
     // This is exactly the same as with the grammar assignments
-    while maybeIn.Count > 0 do
-        let (safeAssigned, unknown) = Map.partition (fun _ v -> Seq.length v = 1) maybeIn
+    while maybeInIngredient.Count > 0 do
+        let (safeAssigned, unknown) = Map.partition (fun _ v -> Seq.length v = 1) maybeInIngredient
         let assignedIngredients = Set.unionMany (Dict.values safeAssigned)
-        maybeIn <- Map.map (fun _ v -> Set.difference v assignedIngredients) unknown
+        maybeInIngredient <- Map.map (fun _ v -> Set.difference v assignedIngredients) unknown
         for (k,v) in Dict.toSeq safeAssigned do
             safeAssignments <- safeAssignments.Add(k,v)
     safeAssignments |> Map.map (fun _ v -> Seq.head v)
