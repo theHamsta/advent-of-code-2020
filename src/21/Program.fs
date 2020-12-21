@@ -63,8 +63,7 @@ let maybeContainedByTable (dishes: Dish seq) =
 let safeIngredients (dishes: Dish seq) =
     let allIngredients = dishes |> Seq.map (fun  d -> d.ingredients) |> Set.unionMany   
     let suspipiousIngredients = (maybeContainedByTable dishes)
-                                |> Dict.toSeq
-                                |> Seq.map (fun (_,v) -> v)
+                                |> Dict.values
                                 |> Set.unionMany
     Set.difference allIngredients suspipiousIngredients
 
