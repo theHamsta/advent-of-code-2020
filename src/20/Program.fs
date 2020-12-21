@@ -1,7 +1,5 @@
 #if INTERACTIVE
-#r "nuget: ShellProgressBar"
 #r "nuget: FParsec"
-#r "nuget: FSharp.Stats"
 #endif
 
 open System.IO
@@ -26,7 +24,10 @@ let tee thing =
 
 let createParser =
     let str x = pstring x .>> many (pstring " ")
-    let pLine = many1 (anyOf [ '#'; '.' ]) .>> newline
+
+    let pLine =
+        many1 (anyOf [ '#'; '.'; 'O' ]) .>> newline
+
     let pTile = many1 pLine
 
     let pTileName =
@@ -132,7 +133,8 @@ let getNeighbor x y direction (currentSolution: Solution) (lookUp: Dictionary<st
     Map.tryFind (x, y) currentSolution
     |> Option.map (fun c ->
         let rtn =
-            lookUp.[direction].GetValueOrDefault(c.tileConfiguration.[inverseDirection direction], Set.empty)
+            lookUp.[direction]
+                .GetValueOrDefault(c.tileConfiguration.[inverseDirection direction], Set.empty)
 
         assert (Seq.forall (fun a -> a.tileConfiguration.[direction] = c.tileConfiguration.[inverseDirection direction])
                     rtn)
@@ -145,7 +147,7 @@ let rec extendSolution puzzleSizeX
                        (availableIds: Input)
                        (lookUp: Dictionary<string, TileConfiguration Set> list)
                        =
-    let cur =
+    let emptyField =
         Seq.tryFind (fun (x, y) -> currentSolution.ContainsKey((x, y)) |> not)
             (seq {
                 for y in 0 .. puzzleSizeY - 1 do
@@ -153,7 +155,7 @@ let rec extendSolution puzzleSizeX
                         yield (x, y)
              })
 
-    match cur with
+    match emptyField with
     | Some (x, y) ->
         let leftRequirements =
             getNeighbor (x - 1) y TOP currentSolution lookUp
@@ -226,9 +228,74 @@ let checkSolution (solution: Solution) =
 
             assert (left = right)
 
+let assemblePuzzle (solution: Solution) =
+    let puzzleSize =
+        round (sqrt (float solution.Count)) |> int
 
+    let pieceSize = solution.[(0, 0)].tile.GetLength(0) - 2
+    printfn "puzzleSize %i p %i" puzzleSize pieceSize
+
+    Array2D.init (puzzleSize * pieceSize) (puzzleSize * pieceSize) (fun x y ->
+        solution.[(x / pieceSize, y / pieceSize)].tile.[1 + (x % pieceSize), 1 + (y % pieceSize)])
+
+let countWaterRoughness (monsterTemplate:Tile) (totalArea:Tile) =
+    let rotatedFlippedMonsters = extractBorders monsterTemplate 0
+
+    let mutable beforeCount = 0
+    Array2D.iter (fun x -> if x = '#' then beforeCount <- beforeCount + 1 else ()) totalArea
+
+    // Iteration over slow coordinate goes brrrrrrrr
+    for monsterConfig in rotatedFlippedMonsters do
+        let monster = monsterConfig.tile
+        for x in -(monster.GetLength(0)-1)/2..totalArea.GetLength(0)-1 + (monster.GetLength(0)-1)/2 do
+            for y in -(monster.GetLength(1)-1)/2..totalArea.GetLength(1)-1+(monster.GetLength(1)-1)/2 do
+                let mutable monsterMatch = true
+                for u in -(monster.GetLength(0)-1)/2..(monster.GetLength(0)-1)/2 do
+                    for v in -(monster.GetLength(1)-1)/2..(monster.GetLength(1)-1)/2 do
+                        let monsterPixel = monster.[u + (monster.GetLength(0)-1)/2, v + (monster.GetLength(1)-1)/2]
+                        let seaPixel = if x+u >= 0 && x+u <totalArea.GetLength(0) && y+v >= 0 && y+v < totalArea.GetLength(1) then
+                                        totalArea.[x + u, y + v]
+                                       else 
+                                            '.'
+
+                        match monsterPixel, seaPixel with
+                        | '#', '.' -> monsterMatch <- false
+                        | _ -> ()
+                
+                if monsterMatch then
+                    for u in -(monster.GetLength(0)-1)/2..(monster.GetLength(0)-1)/2 do
+                        for v in -(monster.GetLength(1)-1)/2..(monster.GetLength(1)-1)/2 do
+                            let monsterPixel = monster.[u + (monster.GetLength(0)-1)/2, v + (monster.GetLength(1)-1)/2]
+
+                            if x+u >= 0 && x+u < totalArea.GetLength(0) && y+v >= 0 && y+v < totalArea.GetLength(1) then
+                                match monsterPixel with
+                                | '#' -> totalArea.[x + u, y + v] <- 'O'
+                                | _ -> ()
+                            else
+                                ()
+                else ()
+    let mutable count = 0
+    Array2D.iter (fun x -> if x = '#' then count <- count + 1 else ()) totalArea
+    count, beforeCount
+
+let compareArrays (a:Tile) (b:Tile) =
+    Array2D.iteri (fun x y _ -> assert (a.[x,y] = b.[x,y])) a
+
+let parse = (createParser)
 let data = File.ReadAllText "input/20"
-let parsed = (createParser) data
+let parsed = parse data
 
-let solution1 =
-    solvePuzzle parsed |> Option.map addCorners
+let solvedPuzzle = solvePuzzle parsed
+let solution1 = solvedPuzzle |> Option.map addCorners
+//solvedPuzzle |> Option.map checkSolution |> ignore
+
+let monsterExample =
+    (File.ReadAllText "input/seamonster" |> parse).[0]
+//let monsterTemplate =
+    //(File.ReadAllText "input/monster-template" |> parse).[0]
+//let exampleRoughness =countWaterRoughness monsterTemplate monsterExample
+
+let assembledPuzzle = solvedPuzzle |> Option.map assemblePuzzle
+//assembledPuzzle |> Option.map (compareArrays monsterExample)
+//let solution2 = assembledPuzzle |> Option.map (countWaterRoughness monsterTemplate)
+
