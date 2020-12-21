@@ -84,7 +84,7 @@ let solve2 (dishes:Dish seq) =
             safeAssignments <- safeAssignments.Add(k,v)
     safeAssignments |> Map.map (fun _ v -> Seq.head v)
 
-let parse = (createParser)
-let input = (File.ReadAllText "input/21" |> parse)
+let parse = createParser
+let input = File.ReadAllText "input/21" |> parse
 let solution1 = safeIngredients input |> countOccurences input
 let solution2 = solve2 input |> Dict.toList |> List.sortBy fst |> List.map snd |> String.concat ","
