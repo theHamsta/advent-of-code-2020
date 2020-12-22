@@ -69,7 +69,7 @@ let safeIngredients (dishes: Dish seq) =
 
 let countOccurences (dishes: Dish seq) (ingredients: string Set) =
     Seq.sumBy (fun d -> Set.intersect ingredients d.ingredients
-                        |>Seq.length) dishes
+                        |> Seq.length) dishes
 
 let solve2 (dishes:Dish seq) =
     let mutable maybeInIngredient = maybeContainedByTable dishes
@@ -81,7 +81,7 @@ let solve2 (dishes:Dish seq) =
         let assignedIngredients = Set.unionMany (Dict.values safeAssigned)
         maybeInIngredient <- Map.map (fun _ v -> Set.difference v assignedIngredients) unknown
         for (k,v) in Dict.toSeq safeAssigned do
-            safeAssignments <- safeAssignments.Add(k,Seq.head v)
+            safeAssignments <- safeAssignments.Add(k, Seq.head v)
     safeAssignments
 
 let parse = createParser
