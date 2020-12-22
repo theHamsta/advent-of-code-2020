@@ -31,6 +31,7 @@ let rec playGame (input:Map<int32,Deck>) recursive =
         states <- states.Add((p1,p2))
         let p1Card = Seq.head p1
         let p2Card = Seq.head p2
+        let subGamePossible = p1Card < Seq.length p1 && p2Card < Seq.length p2 && recursive
 
         //printfn "Round %i" !counter
         //incr counter
@@ -39,11 +40,11 @@ let rec playGame (input:Map<int32,Deck>) recursive =
         //printfn "P1 card %A" p1Card
         //printfn "P2 card %A" p2Card
 
-        let p1Win = match (p1Card >= Seq.length p1 || p2Card >= Seq.length p2 || not recursive), p1Card > p2Card with
-                    | (true, true) -> true
-                    | (true, false) -> false
-                    | (false, _) -> playGame (Map([(1, Seq.take p1Card (List.tail p1) |> List.ofSeq)
-                                                   (2, Seq.take p2Card (List.tail p2) |> List.ofSeq)])) true
+        let p1Win = match subGamePossible, p1Card > p2Card with
+                    | (false, true) -> true
+                    | (false, false) -> false
+                    | (true, _) -> playGame (Map([(1, Seq.take p1Card (List.tail p1) |> List.ofSeq)
+                                                  (2, Seq.take p2Card (List.tail p2) |> List.ofSeq)])) true
                                     |> fst
                                     |> (=) 1
         //printfn "P1 wins? %A" p1Win
