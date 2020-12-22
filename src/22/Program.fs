@@ -45,8 +45,8 @@ let rec playGame (input:Map<int32,Deck>) recursive =
                     | (false, false) -> false
                     | (true, _) -> playGame (Map([(1, Seq.take p1Card (List.tail p1) |> List.ofSeq)
                                                   (2, Seq.take p2Card (List.tail p2) |> List.ofSeq)])) true
-                                    |> fst
-                                    |> (=) 1
+                                   |> fst
+                                   |> (=) 1
         //printfn "P1 wins? %A" p1Win
         if p1Win then 
             p1 <- List.concat [(List.tail p1);[p1Card;p2Card]]
