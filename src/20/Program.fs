@@ -38,7 +38,7 @@ let createParser =
     let pTileFragement =
         pTileName .>>. pTile
         |>> (fun (index, parsed) ->
-            (index, Array2D.init (List.length parsed.[0]) (List.length parsed) (fun x y -> parsed.[y].[x])))
+            (index, Array2D.init (List.length parsed.[0]) (List.length parsed) (fun x y -> parsed.[x].[y])))
 
     let pInput =
         sepEndBy1 pTileFragement (many newline) |>> Map
