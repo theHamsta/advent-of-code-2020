@@ -12,6 +12,16 @@ let example =
     |> List.ofSeq
     |> List.map (int64 >> (fun x -> x - int64 '0'))
 
+let example2 =
+    "54321"
+    |> List.ofSeq
+    |> List.map (int64 >> (fun x -> x - int64 '0'))
+
+let toInput numberString =
+    numberString
+    |> List.ofSeq
+    |> List.map (int64 >> (fun x -> x - int64 '0'))
+
 let enumerate s = Seq.mapi (fun i b -> (int i, b)) s
 
 type CyclicList = { next: int64[]
@@ -42,6 +52,7 @@ with
         let two = next
         let next = l.next.[int next]
         let three = next
+        let next = l.next.[int next]
 
         l.next.[int l.current] <- next
         [one; two; three]
@@ -113,7 +124,7 @@ let playExtremeGame numRounds lastNumber (startState:int64 list) =
 
     let next = myList.next.[int 1L]
     let nextNext = myList.next.[int next]
-    next * nextNext
+    (next, nextNext, next * nextNext)
 
 let solution1Example =
     example
@@ -129,4 +140,5 @@ let solution1 =
 
 let lastNumber = 1000000L
 let numberRounds = 10000000L
-example |> playExtremeGame numberRounds lastNumber
+//toInput "389125467" |> playExtremeGame numberRounds lastNumber
+toInput "193467258" |> playExtremeGame numberRounds lastNumber
