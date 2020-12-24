@@ -12,7 +12,7 @@ type CyclicList =
 
         let nextList: int64 [] = Array.zeroCreate (int lastNumber + 1)
 
-        for previous, current in Seq.zip numbers (Seq.skip 1 numbers) do
+        for previous, current in Seq.pairwise numbers do
             nextList.[int previous] <- current
 
         // Make cyclic
