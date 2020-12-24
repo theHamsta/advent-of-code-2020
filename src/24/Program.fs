@@ -54,7 +54,7 @@ let step (x,y) direction =
                     | NE -> (1L,1L)
     (x + dx, y + dy)
 
-let NEIGHBORS = [E ; SE ; SW ; W ; NE ; NW] |> List.map (step (0L,0L))
+let OFFSETS = [E ; SE ; SW ; W ; NE ; NW] |> List.map (step (0L,0L))
 
 let followInstructions (input:Direction list list) =
     let floor = Floor()
@@ -77,9 +77,9 @@ let updateGrid (src:Floor) (dst:Floor) =
     dst.Clear()
     for tile in src do
         let tx,ty = tile
-        let allNeighbors = (Seq.map (fun (dx,dy) -> tx+dx, ty+dy) NEIGHBORS)
-        let blackNeighbors = Seq.filter src.Contains allNeighbors
-        let whiteNeighbors = Seq.filter (src.Contains >> not) allNeighbors
+        let allNeighbors = (List.map (fun (dx,dy) -> tx+dx, ty+dy) OFFSETS)
+        let (blackNeighbors, whiteNeighbors) = List.partition src.Contains allNeighbors
+
         match blackNeighbors |> Seq.length with
         | 0 ->  ()
         | c when c > 2 -> ()
@@ -87,7 +87,7 @@ let updateGrid (src:Floor) (dst:Floor) =
 
         for whiteNeighbor in whiteNeighbors do
             let tx,ty = whiteNeighbor
-            if Seq.filter src.Contains (Seq.map (fun (dx,dy) -> tx+dx, ty+dy) NEIGHBORS) |> Seq.length = 2 then
+            if Seq.filter src.Contains (Seq.map (fun (dx,dy) -> tx+dx, ty+dy) OFFSETS) |> Seq.length = 2 then
                 dst.Add(whiteNeighbor) |> ignore
             else
                 ()
