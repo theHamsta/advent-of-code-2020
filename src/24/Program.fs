@@ -44,66 +44,83 @@ let createParser =
         | Success (ast, _, _) -> ast
         | Failure (err, _, _) -> failwith err)
 
-let step (x,y) direction =
-    let (dx,dy) = match direction with
-                    | E -> (2L,0L)
-                    | SE -> (1L,-1L)
-                    | SW -> (-1L,-1L)
-                    | W -> (-2L,0L)
-                    | NW -> (-1L,1L)
-                    | NE -> (1L,1L)
+let step (x, y) direction =
+    let (dx, dy) =
+        match direction with
+        | E -> (2L, 0L)
+        | SE -> (1L, -1L)
+        | SW -> (-1L, -1L)
+        | W -> (-2L, 0L)
+        | NW -> (-1L, 1L)
+        | NE -> (1L, 1L)
+
     (x + dx, y + dy)
 
-let OFFSETS = [E ; SE ; SW ; W ; NE ; NW] |> List.map (step (0L,0L))
+let OFFSETS =
+    [ E; SE; SW; W; NE; NW ]
+    |> List.map (step (0L, 0L))
 
-let followInstructions (input:Direction list list) =
+let followInstructions (input: Direction list list) =
     let floor = Floor()
 
     for sequence in input do
-        let coordinate = sequence |> Seq.fold step (0L,0L)
+        let coordinate = sequence |> Seq.fold step (0L, 0L)
 
-        if floor.Remove(coordinate) then
-            ()
-         else
-            floor.Add(coordinate) |> ignore
+        if floor.Remove(coordinate) then () else floor.Add(coordinate) |> ignore
+
     floor
 
-let swap (left : 'a byref) (right : 'a byref) =
-      let temp = left
-      left <- right
-      right <- temp
+let swap (left: 'a byref) (right: 'a byref) =
+    let temp = left
+    left <- right
+    right <- temp
 
-let updateGrid (src:Floor) (dst:Floor) =
+let updateGrid (src: Floor) (dst: Floor) =
     dst.Clear()
+
     for tile in src do
-        let tx,ty = tile
-        let allNeighbors = (List.map (fun (dx,dy) -> tx+dx, ty+dy) OFFSETS)
+        let tx, ty = tile
+
+        let allNeighbors =
+            (List.map (fun (dx, dy) -> tx + dx, ty + dy) OFFSETS)
+
         let (blackNeighbors, whiteNeighbors) = List.partition src.Contains allNeighbors
 
         match blackNeighbors |> Seq.length with
-        | 0 ->  ()
+        | 0 -> ()
         | c when c > 2 -> ()
         | _ -> dst.Add(tile) |> ignore
 
         for whiteNeighbor in whiteNeighbors do
-            let tx,ty = whiteNeighbor
-            if Seq.filter src.Contains (Seq.map (fun (dx,dy) -> tx+dx, ty+dy) OFFSETS) |> Seq.length = 2 then
+            let tx, ty = whiteNeighbor
+
+            if OFFSETS
+               |> Seq.map (fun (dx, dy) -> tx + dx, ty + dy)
+               |> Seq.filter src.Contains
+               |> Seq.length = 2 then
                 dst.Add(whiteNeighbor) |> ignore
             else
                 ()
 
-let gameOfTiles numberRounds (initialFloor:Floor) =
+let gameOfTiles numberRounds (initialFloor: Floor) =
     let mutable src = initialFloor
     let mutable dst = Floor()
 
-    for _ in 1..numberRounds do
+    for _ in 1 .. numberRounds do
         updateGrid src dst
         swap &src &dst
-        //printfn "%i" src.Count
+    //printfn "%i" src.Count
     src
 
 let parse = (createParser)
-assert ((0L,0L) = ((parse "nwwswee\n").[0] |> Seq.fold step (0L,0L)))
-let input = File.ReadAllText "input/24" |> parse 
-let solution1 = input |> followInstructions |> (fun f -> f.Count)
-let solution2 = input |> followInstructions |> gameOfTiles 100 |> (fun f -> f.Count)
+assert ((0L, 0L) = ((parse "nwwswee\n").[0] |> Seq.fold step (0L, 0L)))
+let input = File.ReadAllText "input/24" |> parse
+
+let solution1 =
+    input |> followInstructions |> (fun f -> f.Count)
+
+let solution2 =
+    input
+    |> followInstructions
+    |> gameOfTiles 100
+    |> (fun f -> f.Count)
