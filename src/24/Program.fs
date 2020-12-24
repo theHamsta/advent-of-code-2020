@@ -25,7 +25,7 @@ let createParser =
                  (stringReturn "nw" NW)
                  (stringReturn "ne" NE) ]
 
-    let pDirections = (many1 pDirection) .>> newline
+    let pDirections = (many1 pDirection)
 
     let pInput =
         sepEndBy1 (pDirections) (many newline) .>> eof
@@ -104,7 +104,7 @@ let gameOfTiles numberRounds (initialFloor: Floor) =
     src
 
 let parse = (createParser)
-assert ((0L, 0L) = ((parse "nwwswee\n").[0] |> Seq.fold step (0L, 0L)))
+assert ((0L, 0L) = ((parse "nwwswee").[0] |> Seq.fold step (0L, 0L)))
 let input = File.ReadAllText "input/24" |> parse
 
 let solution1 =
