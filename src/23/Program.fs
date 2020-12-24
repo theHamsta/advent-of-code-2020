@@ -1,49 +1,25 @@
-// Learn more about F# at http://docs.microsoft.com/dotnet/fsharp
-
-open System
-
-let input =
-    "193467258"
-    |> List.ofSeq
-    |> List.map (int64 >> (fun x -> x - int64 '0'))
-
-let example =
-    "389125467"
-    |> List.ofSeq
-    |> List.map (int64 >> (fun x -> x - int64 '0'))
-
-let example2 =
-    "54321"
-    |> List.ofSeq
-    |> List.map (int64 >> (fun x -> x - int64 '0'))
-
 let toInput numberString =
     numberString
     |> List.ofSeq
     |> List.map (int64 >> (fun x -> x - int64 '0'))
 
-let enumerate s = Seq.mapi (fun i b -> (int i, b)) s
-
-type CyclicList = { next: int64[]
-                    mutable current: int64}
-with
+type CyclicList =
+    { next: int64 []
+      mutable current: int64 }
     static member FromSeq numbers =
-        let lastNumber = Seq.last numbers
         let firstNumber = Seq.head numbers
+        let lastNumber = Seq.last numbers
 
-        let nextList: int64[] = Array.zeroCreate (int lastNumber + 1)
+        let nextList: int64 [] = Array.zeroCreate (int lastNumber + 1)
 
         for previous, current in Seq.zip (Seq.skip 0 numbers) (Seq.skip 1 numbers) do
             nextList.[int previous] <- current
-
-        // Make cyclic
         nextList.[int lastNumber] <- firstNumber
 
         { next = nextList
-          current = firstNumber}
+          current = firstNumber }
 
-    member l.AdvanceCurrent =
-            l.current <- l.next.[int l.current]
+    member l.AdvanceCurrent = l.current <- l.next.[int l.current]
 
     member l.Drain3 =
         let next = l.next.[int l.current]
@@ -53,9 +29,8 @@ with
         let next = l.next.[int next]
         let three = next
         let next = l.next.[int next]
-
         l.next.[int l.current] <- next
-        [one; two; three]
+        [ one; two; three ]
 
     member l.InsertAfter index first last =
         let previousNext = l.next.[int index]
@@ -99,11 +74,9 @@ let playGame numRounds startState =
     |> List.take 8
 
 
-let playExtremeGame numRounds lastNumber (startState:int64 list) =
-    let numbers = seq { for i in 1L..lastNumber -> if int i <= List.length startState then
-                                                    startState.[int i - 1]
-                                                   else
-                                                    i }
+let playExtremeGame numRounds lastNumber (startState: int64 list) =
+    let numbers =
+        seq { for i in 1L .. lastNumber -> if int i <= List.length startState then startState.[int i - 1] else i }
 
     let myList = CyclicList.FromSeq numbers
 
@@ -127,13 +100,13 @@ let playExtremeGame numRounds lastNumber (startState:int64 list) =
     (next, nextNext, next * nextNext)
 
 let solution1Example =
-    example
+    toInput "389125467"
     |> playGame 100L
     |> Seq.map string
     |> String.concat ""
 
 let solution1 =
-    input
+    toInput "389125467"
     |> playGame 100L
     |> Seq.map string
     |> String.concat ""
@@ -141,4 +114,6 @@ let solution1 =
 let lastNumber = 1000000L
 let numberRounds = 10000000L
 //toInput "389125467" |> playExtremeGame numberRounds lastNumber
-toInput "193467258" |> playExtremeGame numberRounds lastNumber
+let solution2 =
+    toInput "193467258"
+    |> playExtremeGame numberRounds lastNumber
