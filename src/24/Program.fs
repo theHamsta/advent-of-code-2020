@@ -18,21 +18,12 @@ type Floor = HashSet<(int64 * int64)>
 
 let createParser =
     let pDirection =
-        choice [ (pstring "e")
-                 (pstring "se")
-                 (pstring "sw")
-                 (pstring "w")
-                 (pstring "nw")
-                 (pstring "ne") ]
-        |>> (fun d ->
-            match d with
-            | "e" -> E
-            | "se" -> SE
-            | "sw" -> SW
-            | "w" -> W
-            | "nw" -> NW
-            | "ne" -> NE
-            | d -> failwith (sprintf "Invalid direction: %A" d))
+        choice [ (stringReturn "e" E)
+                 (stringReturn "se" SE)
+                 (stringReturn "sw" SW)
+                 (stringReturn "w" W)
+                 (stringReturn "nw" NW)
+                 (stringReturn "ne" NE) ]
 
     let pDirections = (many1 pDirection) .>> newline
 
