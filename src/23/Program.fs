@@ -14,23 +14,26 @@ type CyclicList =
 
         for previous, current in Seq.zip (Seq.skip 0 numbers) (Seq.skip 1 numbers) do
             nextList.[int previous] <- current
+
+        // Make cyclic
         nextList.[int lastNumber] <- firstNumber
 
         { next = nextList
           current = firstNumber }
 
     member l.AdvanceCurrent = l.current <- l.next.[int l.current]
+    member l.Next number = l.next.[int number]
 
     member l.Drain3 =
-        let next = l.next.[int l.current]
+        let next = l.Next(l.current)
         let one = next
-        let next = l.next.[int next]
+        let next = l.Next(next)
         let two = next
-        let next = l.next.[int next]
+        let next = l.Next(next)
         let three = next
-        let next = l.next.[int next]
+        let next = l.Next(next)
         l.next.[int l.current] <- next
-        [ one; two; three ]
+        ( one, two, three )
 
     member l.InsertAfter index first last =
         let previousNext = l.next.[int index]
@@ -82,21 +85,19 @@ let playExtremeGame numRounds lastNumber (startState: int64 list) =
 
     for _ in 1L .. numRounds do
         let current = myList.current
-        let pickUp = myList.Drain3
+        let (a,b,c) = myList.Drain3
 
         let dest =
-            (seq { for i in 1L .. 4L -> (current - i - 1L + lastNumber) % lastNumber + 1L }
-             |> List.ofSeq)
+            (seq { for i in 1L .. 4L -> let result = (current - i - 1L)
+                                        if result > 0L then result else result + lastNumber })
             |> Seq.find (fun x ->
-                x <> pickUp.[0]
-                && x <> pickUp.[1]
-                && x <> pickUp.[2])
+                x <> a && x <> b && x <> c)
 
-        myList.InsertAfter dest pickUp.[0] pickUp.[2]
+        myList.InsertAfter dest a c
         myList.AdvanceCurrent
 
-    let next = myList.next.[int 1L]
-    let nextNext = myList.next.[int next]
+    let next = myList.Next(1L)
+    let nextNext = myList.Next(next)
     (next, nextNext, next * nextNext)
 
 let solution1Example =
