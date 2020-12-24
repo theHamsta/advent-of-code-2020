@@ -68,8 +68,7 @@ let updateGrid (src: Floor) (dst: Floor) =
     dst.Clear()
 
     for tile in src do
-        let allNeighbors =
-            (List.map (step tile) DIRECTIONS)
+        let allNeighbors = List.map (step tile) DIRECTIONS
 
         let (blackNeighbors, whiteNeighbors) = List.partition src.Contains allNeighbors
 
