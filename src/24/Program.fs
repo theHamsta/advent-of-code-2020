@@ -16,7 +16,7 @@ type Direction =
 
 type Floor = HashSet<(int64 * int64)>
 
-let createParser =
+let parse =
     let pDirection =
         choice [ (stringReturn "e" E)
                  (stringReturn "se" SE)
@@ -97,7 +97,6 @@ let gameOfTiles numberRounds (initialFloor: Floor) =
     //printfn "%i" src.Count
     src
 
-let parse = (createParser)
 assert ((0L, 0L) = ((parse "nwwswee").[0] |> Seq.fold step (0L, 0L)))
 let input = File.ReadAllText "input/24" |> parse
 
