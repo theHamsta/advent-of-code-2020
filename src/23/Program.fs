@@ -12,7 +12,7 @@ type CyclicList =
 
         let nextList: int64 [] = Array.zeroCreate (int lastNumber + 1)
 
-        for previous, current in Seq.zip (Seq.skip 0 numbers) (Seq.skip 1 numbers) do
+        for previous, current in Seq.zip numbers (Seq.skip 1 numbers) do
             nextList.[int previous] <- current
 
         // Make cyclic
@@ -25,14 +25,10 @@ type CyclicList =
     member l.Next number = l.next.[int number]
 
     member l.Drain3 =
-        let next = l.Next(l.current)
-        let one = next
-        let next = l.Next(next)
-        let two = next
-        let next = l.Next(next)
-        let three = next
-        let next = l.Next(next)
-        l.next.[int l.current] <- next
+        let one = l.Next(l.current)
+        let two = l.Next(one)
+        let three = l.Next(two)
+        l.next.[int l.current] <- three
         ( one, two, three )
 
     member l.InsertAfter index first last =
