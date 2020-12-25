@@ -35,14 +35,14 @@ type PrivateKey = { value: int64 }
         fastExp x k.value PrivateKey.MagicNumber
     member k.ToPublicKey = {PublicKey.value = k.Encrypt 7L}
     member k.ToCypherSystem =
-        { publicKey = k.ToPublicKey; loopSize = k }
+        { publicKey = k.ToPublicKey; privateKey = k }
 
     static member MagicNumber = 20201227L
     static member New x = {PrivateKey.value = x}
 
-and CypherSystem = { publicKey: PublicKey; loopSize: PrivateKey }
+and CypherSystem = { publicKey: PublicKey; privateKey: PrivateKey }
     with
-    member s.Encrypt x = s.loopSize.Encrypt x
+    member s.Encrypt x = s.privateKey.Encrypt x
     static member New x = (PrivateKey.New x).ToCypherSystem
 
 let input = (File.ReadAllText "input/25").Split('\n', StringSplitOptions.RemoveEmptyEntries) |> Array.map int64
@@ -53,12 +53,12 @@ let solve1 input =
                                     | _ -> failwith "Invalid input"
     let bruteForceCyperSystems = seq { for i in 1L..Int64.MaxValue -> CypherSystem.New i }
     let doorSystem = Seq.find (fun s -> s.publicKey = doorPublic) bruteForceCyperSystems
-    //let cardSystem = Seq.find (fun s -> s.publicKey = cardPublic) bruteForceCyperSystems
 
     let encryptionKey = doorSystem.Encrypt cardPublic.value
-    //let encryptionKey2 = cardSystem.Encrypt doorSystem.publicKey.value
-    //assert encryptionKey = encryptionKey2
+
+    //let cardSystem = Seq.find (fun s -> s.publicKey = cardPublic) bruteForceCyperSystems
+    //let encryptionKey2 = cardSystem.Encrypt doorPublic.value
+    //assert (encryptionKey = encryptionKey2)
     encryptionKey
 
 let solution1 = solve1 input
-
