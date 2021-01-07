@@ -77,7 +77,7 @@ let setAddresses (mask:MaskInstruction) address value (map: Map<uint64*uint64,ui
     let newAddress = mask.value ^^^ address
     let mutable newInvalidMap = invalidMap
     map
-        |> Map.map (fun value (oldAddress, oldFloating) -> 
+            |> Map.map (fun (value,_) (oldAddress, oldFloating) -> 
                 let overwriteSomeBits = ~~~(oldAddress ^^^ newAddress) ||| floating ||| oldFloating
                 let overwriteAllBits = ~~~(oldAddress ^^^ newAddress) ||| floating
                 if allOne overwriteSomeBits then
@@ -85,13 +85,13 @@ let setAddresses (mask:MaskInstruction) address value (map: Map<uint64*uint64,ui
                         (0UL, 0UL)
                     else 
                         printfn "old %x new %x overwriteSomeBits %x overwriteAllBits %X" oldAddress newAddress overwriteSomeBits overwriteAllBits
-                        printMapEntry (newAddress, floating)
                         printMapEntry (oldAddress, oldFloating)
-                        printfn "%i" (fst value)
+                        printMapEntry (newAddress, floating)
+                        printfn "%i" value
                         let newFloating = oldFloating &&& ~~~floating
                         let newAddressForOld = (oldAddress &&& ~~~oldFloating) ||| (~~~newAddress &&& oldFloating)
                         printMapEntry (newAddressForOld, newFloating)
-                        newInvalidMap <- newInvalidMap.Add(fst value, (newAddressForOld &&& ~~~newFloating) ||| (newAddress &&& newFloating))
+                        newInvalidMap <- newInvalidMap.Add(value, (newAddressForOld &&& ~~~newFloating) ||| (newAddress &&& newFloating))
                         (newAddressForOld, ~~~newFloating)
                 else 
                     (oldAddress, oldFloating))
@@ -125,8 +125,9 @@ let solution2 (instructions: Instruction seq) initialState =
     let sum = finalState.registers |> Map.fold (fun acc k (address,floating) -> acc + if address = 0UL then 0UL else (snd k) * (max 1UL (uint64(1UL <<< (BitOperations.PopCount floating))))) 0UL
     let otherSum = finalState.invalidRegisters |> Map.fold (fun acc k _ -> acc + k) 0UL 
     sum - otherSum
+    finalState
 
-let data = File.ReadAllText "input/14"
+let data = File.ReadAllText "input/14_example2"
 let instructions = parseInput data
 let sol1 = solution1 instructions {registers=Map.empty; mask = { mask = 0UL; value = 0UL }}
 let sol2 = solution2 instructions {registers=Map.empty; invalidRegisters=Map.empty; mask = { mask = 0UL; value = 0UL }}
